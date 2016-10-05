@@ -2,6 +2,7 @@
 #include <iostream>
 #include <KVS.mpi/Lib/Environment.h>
 #include <KVS.mpi/Lib/Communicator.h>
+#include <KVS.mpi/Lib/Operator.h>
 
 
 int size_and_rank( int argc, char** argv )
@@ -73,9 +74,59 @@ int send_and_recv_array( int argc, char** argv )
     return 0;
 }
 
+int broadcast_array( int argc, char** argv )
+{
+    kvs::mpi::Environment env( argc, argv );
+    kvs::mpi::Communicator world;
+
+    const int root = 0;
+    const int rank = world.rank();
+
+    kvs::ValueArray<int> values;
+    if ( rank == root )
+    {
+        values.allocate( 3 );
+        values[0] = 1;
+        values[1] = 2;
+        values[2] = 3;
+    }
+
+    world.broadcast( root, values );
+    std::cout << "Values (" << values[0] << "," << values[1] << "," << values[2] << ") at " << rank << std::endl;
+
+    return 0;
+}
+
+int reduce_array( int argc, char** argv )
+{
+    kvs::mpi::Environment env( argc, argv );
+    kvs::mpi::Communicator world;
+
+    const int root = 0;
+    const int rank = world.rank();
+
+    kvs::ValueArray<int> send_values( 3 );
+    send_values[0] = rank;
+    send_values[1] = rank;
+    send_values[2] = rank;
+
+    kvs::ValueArray<int> recv_values;
+    world.reduce( root, send_values, recv_values, kvs::mpi::Operator::Sum<int>() );
+    std::cout << "Send Values (" << send_values[0] << "," << send_values[1] << "," << send_values[2] << ") from " << rank << std::endl;
+
+    if ( rank == root )
+    {
+        std::cout << "Recv Values (" << recv_values[0] << "," << recv_values[1] << "," << recv_values[2] << ") from " << rank << std::endl;
+    }
+
+    return 0;
+}
+
 int main( int argc, char** argv )
 {
 //    return size_and_rank( argc, argv );
 //    return send_and_recv_value( argc, argv );
-    return send_and_recv_array( argc, argv );
+//    return send_and_recv_array( argc, argv );
+//    return broadcast_array( argc, argv );
+    return reduce_array( argc, argv );
 }
