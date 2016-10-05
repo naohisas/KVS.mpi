@@ -75,37 +75,37 @@ struct BitwiseXOR : public std::binary_function<T,T,T>
 } // end of namespace Operator
 
 template <typename Op, typename T>
-struct OperatorType { static MPI_Op Name() { return MPI_OP_NULL; } };
+struct OperatorType { static MPI_Op Enum() { return MPI_OP_NULL; } };
 
 template <typename T>
-struct OperatorType<Operator::Max<T>,T> { static MPI_Op Name() { return MPI_MAX; } };
+struct OperatorType<Operator::Max<T>,T> { static MPI_Op Enum() { return MPI_MAX; } };
 
 template <typename T>
-struct OperatorType<Operator::Min<T>,T> { static MPI_Op Name() { return MPI_MIN; } };
+struct OperatorType<Operator::Min<T>,T> { static MPI_Op Enum() { return MPI_MIN; } };
 
 template <typename T>
-struct OperatorType<Operator::Sum<T>,T> { static MPI_Op Name() { return MPI_SUM; } };
+struct OperatorType<Operator::Sum<T>,T> { static MPI_Op Enum() { return MPI_SUM; } };
 
 template <typename T>
-struct OperatorType<Operator::Prod<T>,T> { static MPI_Op Name() { return MPI_PROD; } };
+struct OperatorType<Operator::Prod<T>,T> { static MPI_Op Enum() { return MPI_PROD; } };
 
 template <typename T>
-struct OperatorType<Operator::LogicalAND<T>,T> { static MPI_Op Name() { return MPI_LAND; } };
+struct OperatorType<Operator::LogicalAND<T>,T> { static MPI_Op Enum() { return MPI_LAND; } };
 
 template <typename T>
-struct OperatorType<Operator::BitwiseAND<T>,T> { static MPI_Op Name() { return MPI_BAND; } };
+struct OperatorType<Operator::BitwiseAND<T>,T> { static MPI_Op Enum() { return MPI_BAND; } };
 
 template <typename T>
-struct OperatorType<Operator::LogicalOR<T>,T> { static MPI_Op Name() { return MPI_LOR; } };
+struct OperatorType<Operator::LogicalOR<T>,T> { static MPI_Op Enum() { return MPI_LOR; } };
 
 template <typename T>
-struct OperatorType<Operator::BitwiseOR<T>,T> { static MPI_Op Name() { return MPI_BOR; } };
+struct OperatorType<Operator::BitwiseOR<T>,T> { static MPI_Op Enum() { return MPI_BOR; } };
 
 template <typename T>
-struct OperatorType<Operator::LogicalXOR<T>,T> { static MPI_Op Name() { return MPI_LXOR; } };
+struct OperatorType<Operator::LogicalXOR<T>,T> { static MPI_Op Enum() { return MPI_LXOR; } };
 
 template <typename T>
-struct OperatorType<Operator::BitwiseXOR<T>,T> { static MPI_Op Name() { return MPI_BXOR; } };
+struct OperatorType<Operator::BitwiseXOR<T>,T> { static MPI_Op Enum() { return MPI_BXOR; } };
 
 template <typename Op>
 class UserDefinedOperator

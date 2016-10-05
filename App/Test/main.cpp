@@ -5,6 +5,17 @@
 #include <KVS.mpi/Lib/Operator.h>
 
 
+template <typename T>
+std::ostream& operator << ( std::ostream& os, const kvs::ValueArray<T>& values )
+{
+    for ( size_t i = 0; i < values.size(); i++ )
+    {
+        os << values[i];
+        if ( i != values.size() - 1 ) os << ",";
+    }
+    return os;
+}
+
 int size_and_rank( int argc, char** argv )
 {
     kvs::mpi::Environment env( argc, argv );
@@ -112,11 +123,38 @@ int reduce_array( int argc, char** argv )
 
     kvs::ValueArray<int> recv_values;
     world.reduce( root, send_values, recv_values, kvs::mpi::Operator::Sum<int>() );
-    std::cout << "Send Values (" << send_values[0] << "," << send_values[1] << "," << send_values[2] << ") from " << rank << std::endl;
+    std::cout << "Send Values (" << send_values << ") from " << rank << std::endl;
 
     if ( rank == root )
     {
-        std::cout << "Recv Values (" << recv_values[0] << "," << recv_values[1] << "," << recv_values[2] << ") from " << rank << std::endl;
+        std::cout << "Recv Values (" << recv_values << ") from " << rank << std::endl;
+    }
+
+    return 0;
+}
+
+int gather_array( int argc, char** argv )
+{
+    kvs::mpi::Environment env( argc, argv );
+    kvs::mpi::Communicator world;
+
+    const int root = 0;
+    const int rank = world.rank();
+
+    kvs::ValueArray<int> send_values( 3 );
+    send_values[0] = rank;
+    send_values[1] = rank;
+    send_values[2] = rank;
+
+    kvs::ValueArray<int> recv_values;
+    world.gather( root, send_values, recv_values );
+//    world.gather( root, rank, recv_values );
+    std::cout << "Send Values (" << send_values << ") from " << rank << std::endl;
+//    std::cout << "Send value " << rank << " from " << rank << std::endl;
+
+    if ( rank == root )
+    {
+        std::cout << "Recv Values (" << recv_values << ") from " << rank << std::endl;
     }
 
     return 0;
@@ -128,5 +166,6 @@ int main( int argc, char** argv )
 //    return send_and_recv_value( argc, argv );
 //    return send_and_recv_array( argc, argv );
 //    return broadcast_array( argc, argv );
-    return reduce_array( argc, argv );
+//    return reduce_array( argc, argv );
+    return gather_array( argc, argv );
 }
