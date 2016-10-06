@@ -52,8 +52,9 @@ int main( int argc, char** argv )
     }
     else
     {
-        for ( int i = 1; i < size; i++ )
+        for ( int i = 0; i < size; i++ )
         {
+            if ( i == root ) { continue; }
             int src = i;
             kvs::ValueArray<int> values;
             world.receive( src, 0, values );
