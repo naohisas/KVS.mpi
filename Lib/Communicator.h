@@ -107,16 +107,16 @@ public:
     void reduce( const int root, const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
 
     template <typename T, typename Op>
-    void reduceAll( const int root, const T& send_value, T& recv_value, const Op op );
+    void reduceAll( const T& send_value, T& recv_value, const Op op );
 
     template <typename T, typename Op>
-    void reduceAll( const int root, const kvs::ValueArray<T>& send_value, kvs::ValueArray<T>& recv_value, const Op op );
+    void reduceAll( const kvs::ValueArray<T>& send_value, kvs::ValueArray<T>& recv_value, const Op op );
 
     template <typename T>
-    void reduceAll( const int root, const T& send_value, T& recv_value, const MPI_Op op );
+    void reduceAll( const T& send_value, T& recv_value, const MPI_Op op );
 
     template <typename T>
-    void reduceAll( const int root, const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
+    void reduceAll( const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
 };
 
 template <typename T>
@@ -333,7 +333,6 @@ inline void Communicator::allToAll( const T* send_values, const size_t send_size
     MPI_Alltoall( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
 }
 
-
 template <typename T, typename Op>
 inline void Communicator::reduce( const int root, const T& send_value, T& recv_value, const Op op )
 {
@@ -375,46 +374,34 @@ inline void Communicator::reduce( const int root, const T* send_values, T* recv_
     MPI_Reduce( send_values, recv_values, static_cast<int>(size), type, op, root, m_comm );
 }
 
-
 template <typename T, typename Op>
-inline void Communicator::reduceAll( const int root, const T& send_value, T& recv_value, const Op op )
+inline void Communicator::reduceAll( const T& send_value, T& recv_value, const Op op )
 {
     MPI_Op type = OperatorType<Op,T>::Enum();
-    this->reduceAll<T>( root, &send_value, &recv_value, 1, type );
+    this->reduceAll<T>( &send_value, &recv_value, 1, type );
 }
 
 template <typename T, typename Op>
-inline void Communicator::reduceAll( const int root, const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values, const Op op )
+inline void Communicator::reduceAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values, const Op op )
 {
-    const int rank = this->rank();
-    if ( rank == root )
-    {
-        // recv
-        const kvs::UInt32 size = send_values.size();
-        if ( size > recv_values.size() ) { recv_values.allocate( size ); }
+    const kvs::UInt32 size = send_values.size();
+    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
 
-        const MPI_Op mpi_op = OperatorType<Op,T>::Enum();
-        this->reduceAll<T>( root, send_values.data(), recv_values.data(), send_values.size(), mpi_op );
-    }
-    else
-    {
-        // send
-        const MPI_Op mpi_op = OperatorType<Op,T>::Enum();
-        this->reduceAll<T>( root, send_values.data(), NULL, send_values.size(), mpi_op );
-    }
+    const MPI_Op mpi_op = OperatorType<Op,T>::Enum();
+    this->reduceAll<T>( send_values.data(), recv_values.data(), send_values.size(), mpi_op );
 }
 
 template <typename T>
-inline void Communicator::reduceAll( const int root, const T& send_value, T& recv_value, const MPI_Op op )
+inline void Communicator::reduceAll( const T& send_value, T& recv_value, const MPI_Op op )
 {
-    this->reduceAll<T>( root, &send_value, &recv_value, 1, op );
+    this->reduceAll<T>( &send_value, &recv_value, 1, op );
 }
 
 template <typename T>
-inline void Communicator::reduceAll( const int root, const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
+inline void Communicator::reduceAll( const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Allreduce( send_values, recv_values, static_cast<int>(size), type, op, root, m_comm );
+    MPI_Allreduce( send_values, recv_values, static_cast<int>(size), type, op, m_comm );
 }
 
 } // end of namespace mpi
