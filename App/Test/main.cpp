@@ -148,9 +148,7 @@ int gather_array( int argc, char** argv )
 
     kvs::ValueArray<int> recv_values;
     world.gather( root, send_values, recv_values );
-//    world.gather( root, rank, recv_values );
     std::cout << "Send Values (" << send_values << ") from " << rank << std::endl;
-//    std::cout << "Send value " << rank << " from " << rank << std::endl;
 
     if ( rank == root )
     {
@@ -160,6 +158,57 @@ int gather_array( int argc, char** argv )
     return 0;
 }
 
+int scatter_array( int argc, char** argv )
+{
+    kvs::mpi::Environment env( argc, argv );
+    kvs::mpi::Communicator world;
+
+    const int root = 0;
+    const int rank = world.rank();
+
+    kvs::ValueArray<int> send_values( 3 * world.size() );
+    if ( rank == root )
+    {
+        for ( int i = 0; i < world.size(); i++ )
+        {
+            send_values[ 3 * i + 0 ] = i + 1;
+            send_values[ 3 * i + 1 ] = i + 1;
+            send_values[ 3 * i + 2 ] = i + 1;
+        }
+    }
+
+    kvs::ValueArray<int> recv_values;
+    world.scatter( root, send_values, recv_values );
+//    std::cout << "Send Values (" << send_values << ") from " << rank << std::endl;
+
+    std::cout << "Recv Values (" << recv_values << ") from " << rank << std::endl;
+
+    return 0;
+}
+
+
+int alltoall_array( int argc, char** argv )
+{
+    kvs::mpi::Environment env( argc, argv );
+    kvs::mpi::Communicator world;
+
+    const int rank = world.rank();
+
+    kvs::ValueArray<int> send_values( world.size() );
+    for ( int i = 0; i < world.size(); i++ )
+    {
+        send_values[i] = i;
+    }
+
+    kvs::ValueArray<int> recv_values;
+    world.allToAll( send_values, recv_values );
+    std::cout << "Send Values (" << send_values << ") from " << rank << std::endl;
+    std::cout << "Recv Values (" << recv_values << ") from " << rank << std::endl;
+
+    return 0;
+}
+
+
 int main( int argc, char** argv )
 {
 //    return size_and_rank( argc, argv );
@@ -167,5 +216,7 @@ int main( int argc, char** argv )
 //    return send_and_recv_array( argc, argv );
 //    return broadcast_array( argc, argv );
 //    return reduce_array( argc, argv );
-    return gather_array( argc, argv );
+//    return gather_array( argc, argv );
+//    return scatter_array( argc, argv );
+    return alltoall_array( argc, argv );
 }
