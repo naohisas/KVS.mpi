@@ -24,6 +24,8 @@ public:
     int size() const;
     int rank() const;
 
+    // Send
+
     template <typename T>
     void send( const int dst, const int tag, const T value );
 
@@ -32,6 +34,8 @@ public:
 
     template <typename T>
     void send( const int dst, const int tag, const T* values, const size_t size );
+
+    // Receive
 
     template <typename T>
     MPI_Status receive( const int src, const int tag, T& value );
@@ -75,23 +79,6 @@ public:
     template <typename T>
     void gather( const int root, const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size );
 
-    template <typename T>
-    void gatherAll( const T& send_value, kvs::ValueArray<T>& recv_values );
-
-    template <typename T>
-    void gatherAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values );
-
-    template <typename T>
-    void gatherAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size );
-
-    // All to All
-
-    template <typename T>
-    void allToAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values );
-
-    template <typename T>
-    void allToAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size );
-
     // Reduce
 
     template <typename T, typename Op>
@@ -106,17 +93,38 @@ public:
     template <typename T>
     void reduce( const int root, const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
 
-    template <typename T, typename Op>
-    void reduceAll( const T& send_value, T& recv_value, const Op op );
-
-    template <typename T, typename Op>
-    void reduceAll( const kvs::ValueArray<T>& send_value, kvs::ValueArray<T>& recv_value, const Op op );
+    // All-gather
 
     template <typename T>
-    void reduceAll( const T& send_value, T& recv_value, const MPI_Op op );
+    void allGather( const T& send_value, kvs::ValueArray<T>& recv_values );
 
     template <typename T>
-    void reduceAll( const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
+    void allGather( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values );
+
+    template <typename T>
+    void allGather( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size );
+
+    // All to All
+
+    template <typename T>
+    void allToAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values );
+
+    template <typename T>
+    void allToAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size );
+
+    // All-reduce
+
+    template <typename T, typename Op>
+    void allReduce( const T& send_value, T& recv_value, const Op op );
+
+    template <typename T, typename Op>
+    void allReduce( const kvs::ValueArray<T>& send_value, kvs::ValueArray<T>& recv_value, const Op op );
+
+    template <typename T>
+    void allReduce( const T& send_value, T& recv_value, const MPI_Op op );
+
+    template <typename T>
+    void allReduce( const T* send_values, T* recv_values, const size_t size, const MPI_Op op );
 };
 
 template <typename T>
@@ -236,7 +244,6 @@ inline void Communicator::scatter( const int root, const T* send_values, const s
     MPI_Scatter( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
 }
 
-
 template <typename T>
 inline void Communicator::gather( const int root, const T& send_value, kvs::ValueArray<T>& recv_values )
 {
@@ -286,53 +293,6 @@ inline void Communicator::gather( const int root, const T* send_values, const si
     MPI_Gather( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
 }
 
-template <typename T>
-inline void Communicator::gatherAll( const T& send_value, kvs::ValueArray<T>& recv_values )
-{
-    const kvs::UInt32 size = this->size();
-    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
-
-    const int gather_size = 1;
-    this->gatherAll<T>( &send_value, gather_size, recv_values.data(), gather_size );
-}
-
-template <typename T>
-inline void Communicator::gatherAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values )
-{
-    const kvs::UInt32 size = this->size() * send_values.size();
-    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
-
-    const int gather_size = send_values.size();
-    this->gatherAll<T>( send_values.data(), gather_size, recv_values.data(), gather_size );
-}
-
-template <typename T>
-inline void Communicator::gatherAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
-{
-    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Allgather( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
-}
-
-template <typename T>
-inline void Communicator::allToAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values )
-{
-    const int send_size = 1;
-    KVS_ASSERT( send_values.size() / send_size == this->size() );
-
-    const kvs::UInt32 size = send_size * this->size();
-    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
-
-    const int alltoall_size = send_size;
-    this->allToAll<T>( send_values.data(), alltoall_size, recv_values.data(), alltoall_size );
-}
-
-template <typename T>
-inline void Communicator::allToAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
-{
-    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Alltoall( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
-}
-
 template <typename T, typename Op>
 inline void Communicator::reduce( const int root, const T& send_value, T& recv_value, const Op op )
 {
@@ -374,31 +334,78 @@ inline void Communicator::reduce( const int root, const T* send_values, T* recv_
     MPI_Reduce( send_values, recv_values, static_cast<int>(size), type, op, root, m_comm );
 }
 
-template <typename T, typename Op>
-inline void Communicator::reduceAll( const T& send_value, T& recv_value, const Op op )
+template <typename T>
+inline void Communicator::allGather( const T& send_value, kvs::ValueArray<T>& recv_values )
 {
-    MPI_Op type = OperatorType<Op,T>::Enum();
-    this->reduceAll<T>( &send_value, &recv_value, 1, type );
+    const kvs::UInt32 size = this->size();
+    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
+
+    const int gather_size = 1;
+    this->allGather<T>( &send_value, gather_size, recv_values.data(), gather_size );
+}
+
+template <typename T>
+inline void Communicator::allGather( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values )
+{
+    const kvs::UInt32 size = this->size() * send_values.size();
+    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
+
+    const int gather_size = send_values.size();
+    this->allGather<T>( send_values.data(), gather_size, recv_values.data(), gather_size );
+}
+
+template <typename T>
+inline void Communicator::allGather( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
+{
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Allgather( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
+}
+
+template <typename T>
+inline void Communicator::allToAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values )
+{
+    const int send_size = 1;
+    KVS_ASSERT( send_values.size() / send_size == this->size() );
+
+    const kvs::UInt32 size = send_size * this->size();
+    if ( size > recv_values.size() ) { recv_values.allocate( size ); }
+
+    const int alltoall_size = send_size;
+    this->allToAll<T>( send_values.data(), alltoall_size, recv_values.data(), alltoall_size );
+}
+
+template <typename T>
+inline void Communicator::allToAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
+{
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Alltoall( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
 }
 
 template <typename T, typename Op>
-inline void Communicator::reduceAll( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values, const Op op )
+inline void Communicator::allReduce( const T& send_value, T& recv_value, const Op op )
+{
+    MPI_Op type = OperatorType<Op,T>::Enum();
+    this->allReduce<T>( &send_value, &recv_value, 1, type );
+}
+
+template <typename T, typename Op>
+inline void Communicator::allReduce( const kvs::ValueArray<T>& send_values, kvs::ValueArray<T>& recv_values, const Op op )
 {
     const kvs::UInt32 size = send_values.size();
     if ( size > recv_values.size() ) { recv_values.allocate( size ); }
 
     const MPI_Op mpi_op = OperatorType<Op,T>::Enum();
-    this->reduceAll<T>( send_values.data(), recv_values.data(), send_values.size(), mpi_op );
+    this->allReduce<T>( send_values.data(), recv_values.data(), send_values.size(), mpi_op );
 }
 
 template <typename T>
-inline void Communicator::reduceAll( const T& send_value, T& recv_value, const MPI_Op op )
+inline void Communicator::allReduce( const T& send_value, T& recv_value, const MPI_Op op )
 {
-    this->reduceAll<T>( &send_value, &recv_value, 1, op );
+    this->allReduce<T>( &send_value, &recv_value, 1, op );
 }
 
 template <typename T>
-inline void Communicator::reduceAll( const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
+inline void Communicator::allReduce( const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
     MPI_Allreduce( send_values, recv_values, static_cast<int>(size), type, op, m_comm );
