@@ -144,7 +144,7 @@ template <typename T>
 inline void Communicator::send( const int dst, const int tag, const T* values, const size_t size )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Send( values, static_cast<int>(size), type, dst, tag, m_comm );
+    MPI_Send( const_cast<T*>(values), static_cast<int>(size), type, dst, tag, m_comm );
 }
 
 template <typename T>
@@ -408,7 +408,7 @@ template <typename T>
 inline void Communicator::allReduce( const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Allreduce( send_values, recv_values, static_cast<int>(size), type, op, m_comm );
+    MPI_Allreduce( const_cast<T*>(send_values), recv_values, static_cast<int>(size), type, op, m_comm );
 }
 
 } // end of namespace mpi
