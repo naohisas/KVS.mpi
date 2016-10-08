@@ -136,7 +136,6 @@ inline void Communicator::send( const int dst, const int tag, const T value )
 template <typename T>
 inline void Communicator::send( const int dst, const int tag, const kvs::ValueArray<T>& values )
 {
-    this->send<kvs::UInt32>( dst, tag, kvs::UInt32( values.size() ) );
     this->send<T>( dst, tag, values.data(), values.size() );
 }
 
@@ -156,10 +155,14 @@ inline MPI_Status Communicator::receive( const int src, const int tag, T& value 
 template <typename T>
 inline MPI_Status Communicator::receive( const int src, const int tag, kvs::ValueArray<T>& values )
 {
-    kvs::UInt32 size = 0;
-    MPI_Status status = this->receive<kvs::UInt32>( src, tag, size );
+    MPI_Status status;
+    MPI_Probe( src, tag, m_comm, &status );
 
-    if ( size > values.size() ) { values.allocate( size ); }
+    int size = 0;
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Get_count( &status, type, &size );
+
+    if ( size > static_cast<int>(values.size()) ) { values.allocate( size ); }
     status = this->receive<T>( src, tag, values.data(), values.size() );
     return status;
 }
