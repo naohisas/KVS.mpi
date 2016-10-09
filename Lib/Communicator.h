@@ -5,6 +5,7 @@
 #include <kvs/Assert>
 #include "Operator.h"
 #include "DataType.h"
+#include "Request.h"
 
 
 namespace kvs
@@ -35,6 +36,18 @@ public:
     template <typename T>
     void send( const int dst, const int tag, const T* values, const size_t size );
 
+    template <typename T>
+    //    MPI_Request immediateSend( const int dst, const int tag, const T value );
+    kvs::mpi::Request immediateSend( const int dst, const int tag, const T value );
+
+    template <typename T>
+    //    MPI_Request immediateSend( const int dst, const int tag, const kvs::ValueArray<T>& values );
+    kvs::mpi::Request immediateSend( const int dst, const int tag, const kvs::ValueArray<T>& values );
+
+    template <typename T>
+    //    MPI_Request immediateSend( const int dst, const int tag, const T* values, const size_t size );
+    kvs::mpi::Request immediateSend( const int dst, const int tag, const T* values, const size_t size );
+
     // Receive
 
     template <typename T>
@@ -45,6 +58,18 @@ public:
 
     template <typename T>
     MPI_Status receive( const int src, const int tag, T* values, const size_t size );
+
+    template <typename T>
+    //    MPI_Request immediateReceive( const int src, const int tag, T& value );
+    kvs::mpi::Request immediateReceive( const int src, const int tag, T& value );
+
+    template <typename T>
+    //    MPI_Request immediateReceive( const int src, const int tag, kvs::ValueArray<T>& values );
+    kvs::mpi::Request immediateReceive( const int src, const int tag, kvs::ValueArray<T>& values );
+
+    template <typename T>
+    //    MPI_Request immediateReceive( const int src, const int tag, T* values, const size_t size );
+    kvs::mpi::Request immediateReceive( const int src, const int tag, T* values, const size_t size );
 
     // Broadcast
 
@@ -147,6 +172,27 @@ inline void Communicator::send( const int dst, const int tag, const T* values, c
 }
 
 template <typename T>
+inline kvs::mpi::Request Communicator::immediateSend( const int dst, const int tag, const T value )
+{
+    return this->immediateSend<T>( dst, tag, &value, 1 );
+}
+
+template <typename T>
+inline kvs::mpi::Request Communicator::immediateSend( const int dst, const int tag, const kvs::ValueArray<T>& values )
+{
+    return this->immediateSend<T>( dst, tag, values.data(), values.size() );
+}
+
+template <typename T>
+inline kvs::mpi::Request Communicator::immediateSend( const int dst, const int tag, const T* values, const size_t size )
+{
+    MPI_Request request;
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Isend( const_cast<T*>(values), static_cast<int>(size), type, dst, tag, m_comm, &request );
+    return kvs::mpi::Request( request );
+}
+
+template <typename T>
 inline MPI_Status Communicator::receive( const int src, const int tag, T& value )
 {
     return this->receive<T>( src, tag, &value, 1 );
@@ -163,8 +209,7 @@ inline MPI_Status Communicator::receive( const int src, const int tag, kvs::Valu
     MPI_Get_count( &status, type, &size );
 
     if ( size > static_cast<int>(values.size()) ) { values.allocate( size ); }
-    status = this->receive<T>( src, tag, values.data(), values.size() );
-    return status;
+    return this->receive<T>( src, tag, values.data(), values.size() );
 }
 
 template <typename T>
@@ -174,6 +219,36 @@ inline MPI_Status Communicator::receive( const int src, const int tag, T* values
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
     MPI_Recv( values, static_cast<int>(size), type, src, tag, m_comm, &status );
     return status;
+}
+
+template <typename T>
+inline kvs::mpi::Request Communicator::immediateReceive( const int src, const int tag, T& value )
+{
+    return this->immediateReceive<T>( src, tag, &value, 1 );
+}
+
+template <typename T>
+inline kvs::mpi::Request Communicator::immediateReceive( const int src, const int tag, kvs::ValueArray<T>& values )
+{
+    int flag;
+    MPI_Status status;
+    MPI_Iprobe( src, tag, m_comm, &flag, &status );
+
+    int size = 0;
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Get_count( &status, type, &size );
+
+    if ( size > static_cast<int>(values.size()) ) { values.allocate( size ); }
+    return this->immediateReceive<T>( src, tag, values.data(), values.size() );
+}
+
+template <typename T>
+inline kvs::mpi::Request Communicator::immediateReceive( const int src, const int tag, T* values, const size_t size )
+{
+    MPI_Request request;
+    const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
+    MPI_Irecv( values, static_cast<int>(size), type, src, tag, m_comm, &request );
+    return kvs::mpi::Request( request );
 }
 
 template <typename T>
