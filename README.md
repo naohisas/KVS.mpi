@@ -80,3 +80,9 @@ The following variables in kvsmake.conf have to be modifed accordint to your com
 export OMPI_CXX=g++-6
 KVS_CPP := mpicxx
 ```
+
+#### K computer and Pi computer
+```
+#export OMPI_CXX=g++-6
+KVS_CPP := mpiFCCpx
+```
