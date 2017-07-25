@@ -61,7 +61,7 @@ $ cd Lib
 $ ./kvsmake.py
 ```
 
-You can also change the compiler for compiling Lib by using an environment parameter ```KVS_CPP```. The following is an example of the use of ```mpicxx``.
+You can also change the compiler for compiling Lib by using an environment parameter ```KVS_CPP```. The following is an example of the use of ```mpicxx```.
 ```
 $ KVS_CPP=mpicxx ./kvsmake.py
 ```
@@ -70,7 +70,13 @@ $ KVS_CPP=mpicxx ./kvsmake.py
 Several test programs with KVS.mpi can be found in the App directory. Each of the programs can be easily compiled with kvsmake command.
 ```
 $ cd App
-$ cd Test
+$ cd Test/HelloWorld
 $ kvsmake -G
 $ kvsmake
+```
+
+The following variables in kvsmake.conf have to be modifed accordint to your computing environment.
+```
+export OMPI_CXX=g++-6
+KVS_CPP := mpicxx
 ```
