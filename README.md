@@ -72,17 +72,22 @@ Several test programs with KVS.mpi can be found in the App directory. Each of th
 $ cd App
 $ cd Test/HelloWorld
 $ kvsmake -G
-$ kvsmake
+$ KVS_CPP=mpicxx kvsmake
 ```
 
-The following variables in kvsmake.conf have to be modifed accordint to your computing environment.
+If you use KVS compiled with the different compiler from the mpicxx wrapper compiler, you need to specify the compiler by using the environment variable ```OMPI_CXX``` for OpenMP or ```MPICH_CXX``` for MPICH as follows:
+
+#### OpenMP
 ```
-export OMPI_CXX=g++-6
-KVS_CPP := mpicxx
+$ OMPI_CXX=g++-6 KVS_CPP=mpicxx kvsmake
+```
+
+#### MPICH
+```
+$ MPICH_CXX=g++-6 KVS_CPP=mpicxx kvsmake
 ```
 
 #### K computer and Pi computer
 ```
-#export OMPI_CXX=g++-6
-KVS_CPP := mpiFCCpx
+$ KVS_CPP=mpiFCCpx kvsmake
 ```
