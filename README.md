@@ -89,17 +89,17 @@ $ MPICH_CXX=g++-6 KVS_CPP=mpicxx kvsmake
 
 ### HPC Environment
 
-- On K computer (RIKEN)
+- K computer (RIKEN)
 ```
 $ KVS_CPP=mpiFCCpx kvsmake
 ```
 
-- Pi computer (Kobe University)
+- Pi-computer (Kobe University)
 ```
 $ KVS_CPP=mpiFCCpx kvsmake
 ```
 
-- Pi VizStudio (Kobe University)
+- Pi-VizStudio (Kobe University)
 ```
 $ KVS_CPP=mpicxx kvsmake
 ```
