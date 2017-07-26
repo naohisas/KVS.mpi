@@ -77,17 +77,27 @@ $ KVS_CPP=mpicxx kvsmake
 
 If you use KVS compiled with the different compiler from the mpicxx wrapper compiler, you need to specify the compiler by using the environment variable ```OMPI_CXX``` for OpenMP or ```MPICH_CXX``` for MPICH as follows:
 
-#### OpenMP
+#### For OpenMP
 ```
 $ OMPI_CXX=g++-6 KVS_CPP=mpicxx kvsmake
 ```
 
-#### MPICH
+#### For MPICH
 ```
 $ MPICH_CXX=g++-6 KVS_CPP=mpicxx kvsmake
 ```
 
-#### K computer and Pi computer
+#### On K computer (RIKEN)
 ```
 $ KVS_CPP=mpiFCCpx kvsmake
+```
+
+#### On Pi computer (Kobe University)
+```
+$ KVS_CPP=mpiFCCpx kvsmake
+```
+
+#### On Pi VizStudio (Kobe University)
+```
+$ KVS_CPP=mpicxx kvsmake
 ```
