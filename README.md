@@ -75,6 +75,15 @@ $ kvsmake -G
 $ KVS_CPP=mpicxx kvsmake
 ```
 
+The execution result of the "HelloWorld" program is shown as follows:
+```
+$ ./run.sh
+Size = 4, Rank = 0
+Size = 4, Rank = 1
+Size = 4, Rank = 2
+Size = 4, Rank = 3
+```
+
 If you use KVS compiled with the different compiler from the mpicxx wrapper compiler, you need to specify the compiler by using the environment variable ```OMPI_CXX``` for OpenMP or ```MPICH_CXX``` for MPICH as follows:
 
 - OpenMP
