@@ -319,7 +319,7 @@ template <typename T>
 inline void Communicator::scatter( const int root, const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Scatter( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
+    MPI_Scatter( const_cast<T*>(send_values), static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
 }
 
 template <typename T>
@@ -368,7 +368,7 @@ template <typename T>
 inline void Communicator::gather( const int root, const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Gather( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
+    MPI_Gather( const_cast<T*>(send_values), static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, root, m_comm );
 }
 
 template <typename T, typename Op>
@@ -409,7 +409,7 @@ template <typename T>
 inline void Communicator::reduce( const int root, const T* send_values, T* recv_values, const size_t size, const MPI_Op op )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Reduce( send_values, recv_values, static_cast<int>(size), type, op, root, m_comm );
+    MPI_Reduce( const_cast<T*>(send_values), recv_values, static_cast<int>(size), type, op, root, m_comm );
 }
 
 template <typename T>
@@ -436,7 +436,7 @@ template <typename T>
 inline void Communicator::allGather( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Allgather( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
+    MPI_Allgather( const_cast<T*>(send_values), static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
 }
 
 template <typename T>
@@ -456,7 +456,7 @@ template <typename T>
 inline void Communicator::allToAll( const T* send_values, const size_t send_size, T* recv_values, const size_t recv_size )
 {
     const MPI_Datatype type = kvs::mpi::DataType<T>::Enum();
-    MPI_Alltoall( send_values, static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
+    MPI_Alltoall( const_cast<T*>(send_values), static_cast<int>(send_size), type, recv_values, static_cast<int>(recv_size), type, m_comm );
 }
 
 template <typename T, typename Op>
