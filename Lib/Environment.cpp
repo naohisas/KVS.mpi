@@ -1,5 +1,6 @@
 #include "Environment.h"
 #include "MPI.h"
+#include "MPICall.h"
 
 
 namespace kvs
@@ -10,12 +11,12 @@ namespace mpi
 
 Environment::Environment( int argc, char** argv )
 {
-    MPI_Init( &argc, &argv );
+    KVS_MPI_CALL( MPI_Init( &argc, &argv ) );
 }
 
 Environment::~Environment()
 {
-    MPI_Finalize();
+    KVS_MPI_CALL( MPI_Finalize() );
 }
 
 } // end of namespace mpi

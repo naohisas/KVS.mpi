@@ -1,4 +1,6 @@
 #include "Request.h"
+#include "MPICall.h"
+
 
 namespace kvs
 {
@@ -14,7 +16,7 @@ Request::Request( MPI_Request request ):
 MPI_Status Request::wait()
 {
     MPI_Status status;
-    MPI_Wait( &m_request, &status );
+    KVS_MPI_CALL( MPI_Wait( &m_request, &status ) );
     return status;
 }
 
@@ -22,13 +24,13 @@ MPI_Status Request::test()
 {
     int flag;
     MPI_Status status;
-    MPI_Test( &m_request, &flag, &status );
+    KVS_MPI_CALL( MPI_Test( &m_request, &flag, &status ) );
     return status;
 }
 
 void Request::cancel()
 {
-    MPI_Cancel( &m_request );
+    KVS_MPI_CALL( MPI_Cancel( &m_request ) );
 }
 
 } // end of namespace mpi
