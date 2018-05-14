@@ -9,24 +9,22 @@ namespace kvs
 namespace mpi
 {
 
-Communicator::Communicator( const MPI_Comm comm ):
-    m_comm( comm )
+Communicator::Communicator( const MPI_Comm handler ):
+    m_handler( handler )
 {
 }
 
 int Communicator::size() const
 {
     int size;
-    KVS_MPI_CALL( MPI_Comm_size( MPI_COMM_WORLD, &size ) );
-
+    KVS_MPI_CALL( MPI_Comm_size( m_handler, &size ) );
     return size;
 }
 
 int Communicator::rank() const
 {
     int rank;
-    KVS_MPI_CALL( MPI_Comm_rank( MPI_COMM_WORLD, &rank ) );
-
+    KVS_MPI_CALL( MPI_Comm_rank( m_handler, &rank ) );
     return rank;
 }
 
