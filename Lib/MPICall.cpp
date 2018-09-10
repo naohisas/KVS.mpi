@@ -14,7 +14,7 @@ namespace
  *  @return text that corresponds to the error code
  */
 /*===========================================================================*/
-std::string ErrorString( int err_code )
+inline std::string GetErrorString( int err_code )
 {
     char err_msg[ MPI_MAX_ERROR_STRING ] = {0};
     int err_msg_len = 0;
@@ -60,7 +60,7 @@ bool HasError( const char* file, const int line, const char* func, const int err
               << ": ";
 
     // Output message with an error string.
-    const std::string message = ::ErrorString( err_code );
+    const std::string message = ::GetErrorString( err_code );
     std::cerr << kvs::ColorStream::Underline( kvs::ColorStream::Bold( message ) ) << std::endl;
     std::cerr << "    " << "Func: " << func << std::endl;
     std::cerr << "    " << "File: " << file << ":" << line << std::endl;
