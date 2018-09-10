@@ -70,14 +70,14 @@ template <typename T>
 inline void Window<T>::create( const kvs::mpi::Communicator& comm, const kvs::ValueArray<T>& buffer )
 {
     m_buffer = buffer;
-    KVS_MPI_CALL( MPI_Win_create( m_buffer.data(), buffer.byteSize(), sizeof(T), MPI_INFO_NULL, comm.handler(), &m_handler ) );
+    KVS_MPI_CALL( MPI_Win_create( m_buffer.data(), buffer.byteSize(), sizeof(T), MPI_INFO_NULL, comm.handler(), &this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::allocate( const kvs::mpi::Communicator& comm, const size_t size )
 {
     T* values = NULL;
-    KVS_MPI_CALL( MPI_Win_allocate( sizeof(T) * size, sizeof(T), MPI_INFO_NULL, comm.handler(), values, &m_handler ) );
+    KVS_MPI_CALL( MPI_Win_allocate( sizeof(T) * size, sizeof(T), MPI_INFO_NULL, comm.handler(), values, &this->m_handler ) );
     m_buffer = kvs::ValueArray<T>( kvs::SharedPointer<T>( values ), size );
 }
 
@@ -86,7 +86,7 @@ inline void Window<T>::free()
 {
     if ( m_handler != MPI_WIN_NULL )
     {
-        KVS_MPI_CALL( MPI_Win_free( &m_handler ) );
+        KVS_MPI_CALL( MPI_Win_free( &this->m_handler ) );
     }
 }
 
@@ -94,7 +94,7 @@ template <typename T>
 inline void Window<T>::get( T& value, const int rank, const size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
-    KVS_MPI_CALL( MPI_Get( &value, 1, data_type, rank, offset, 1, data_type, m_handler ) );
+    KVS_MPI_CALL( MPI_Get( &value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
 }
 
 template <typename T>
@@ -102,14 +102,14 @@ inline void Window<T>::get( kvs::ValueArray<T>& values, const int rank, const si
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
-    KVS_MPI_CALL( MPI_Get( values.data(), data_size, data_type, rank, offset, data_size, data_type, m_handler ) );
+    KVS_MPI_CALL( MPI_Get( values.data(), data_size, data_type, rank, offset, data_size, data_type, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::put( const T value, const int rank, const size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
-    KVS_MPI_CALL( MPI_Put( &value, 1, data_type, rank, offset, 1, data_type, m_handler ) );
+    KVS_MPI_CALL( MPI_Put( &value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
 }
 
 template <typename T>
@@ -117,14 +117,14 @@ inline void Window<T>::put( const kvs::ValueArray<T>& values, const int rank, co
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
-    KVS_MPI_CALL( MPI_Put( values.data(), data_size, data_type, rank, offset, data_size, data_type, m_handler ) );
+    KVS_MPI_CALL( MPI_Put( values.data(), data_size, data_type, rank, offset, data_size, data_type, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::accumulate( const T value, const MPI_Op op, const int rank, const size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
-    KVS_MPI_CALL( MPI_Accumulate( &value, 1, data_type, rank, offset, 1, data_type, op, m_handler ) );
+    KVS_MPI_CALL( MPI_Accumulate( &value, 1, data_type, rank, offset, 1, data_type, op, this->m_handler ) );
 }
 
 template <typename T>
@@ -132,67 +132,67 @@ inline void Window<T>::accumulate( const kvs::ValueArray<T>& values, const MPI_O
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
-    KVS_MPI_CALL( MPI_Accumulate( values.data(), data_size, data_type, rank, offset, data_size, data_type, op, m_handler ) );
+    KVS_MPI_CALL( MPI_Accumulate( values.data(), data_size, data_type, rank, offset, data_size, data_type, op, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::fence( const int assert )
 {
-    KVS_MPI_CALL( MPI_Win_fence( assert, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_fence( assert, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::lock( const int lock_type, const int rank, const int assert )
 {
-    KVS_MPI_CALL( MPI_Win_lock( lock_type, rank, assert, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_lock( lock_type, rank, assert, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::lockAll( const int assert )
 {
-    KVS_MPI_CALL( MPI_Win_lock_all( assert, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_lock_all( assert, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::unlock( const int rank )
 {
-    KVS_MPI_CALL( MPI_Win_unlock( rank, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_unlock( rank, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::unlockAll()
 {
-    KVS_MPI_CALL( MPI_Win_unlock_all( m_handler ) );
+    KVS_MPI_CALL( MPI_Win_unlock_all( this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::sync()
 {
-    KVS_MPI_CALL( MPI_Win_sync( m_handler ) );
+    KVS_MPI_CALL( MPI_Win_sync( this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::flush( const int rank )
 {
-    KVS_MPI_CALL( MPI_Win_flush( rank, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_flush( rank, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::flushAll()
 {
-    KVS_MPI_CALL( MPI_Win_flush_all( m_handler ) );
+    KVS_MPI_CALL( MPI_Win_flush_all( this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::flushLocal( const int rank )
 {
-    KVS_MPI_CALL( MPI_Win_flush_local( rank, m_handler ) );
+    KVS_MPI_CALL( MPI_Win_flush_local( rank, this->m_handler ) );
 }
 
 template <typename T>
 inline void Window<T>::flushLocalAll()
 {
-    KVS_MPI_CALL( MPI_Win_flush_local_all( m_handler ) );
+    KVS_MPI_CALL( MPI_Win_flush_local_all( this->m_handler ) );
 }
 
 } // end of namespace mpi
