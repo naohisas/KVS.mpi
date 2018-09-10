@@ -109,7 +109,7 @@ template <typename T>
 inline void Window<T>::put( const T value, const int rank, const size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
-    KVS_MPI_CALL( MPI_Put( &value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
+    KVS_MPI_CALL( MPI_Put( (void*)&value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
 }
 
 template <typename T>
@@ -117,7 +117,7 @@ inline void Window<T>::put( const kvs::ValueArray<T>& values, const int rank, co
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
-    KVS_MPI_CALL( MPI_Put( values.data(), data_size, data_type, rank, offset, data_size, data_type, this->m_handler ) );
+    KVS_MPI_CALL( MPI_Put( (void*)values.data(), data_size, data_type, rank, offset, data_size, data_type, this->m_handler ) );
 }
 
 template <typename T>
