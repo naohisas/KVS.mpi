@@ -4,6 +4,7 @@
 #include "Communicator.h"
 #include "DataType.h"
 #include <kvs/ValueArray>
+#include <kvs/Message>
 
 
 namespace kvs
@@ -77,7 +78,12 @@ template <typename T>
 inline void Window<T>::allocate( const kvs::mpi::Communicator& comm, const size_t size )
 {
     T* values = NULL;
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_allocate( sizeof(T) * size, sizeof(T), MPI_INFO_NULL, comm.handler(), values, &this->m_handler ) );
+#else
+    KVS_MPI_CALL( MPI_Alloc_mem( sizeof(T) * size, MPI_INFO_NULL, values ) );
+    KVS_MPI_CALL( MPI_Win_create( values, sizeof(T) * size, sizeof(T), MPI_INFO_NULL, comm.handler(), &this->m_handler ) );
+#endif
     m_buffer = kvs::ValueArray<T>( kvs::SharedPointer<T>( values ), size );
 }
 
@@ -86,7 +92,12 @@ inline void Window<T>::free()
 {
     if ( m_handler != MPI_WIN_NULL )
     {
+#if MPI_VERSION >= 3
         KVS_MPI_CALL( MPI_Win_free( &this->m_handler ) );
+#else
+        KVS_MPI_CALL( MPI_Win_free( &this->m_handler ) );
+        KVS_MPI_CALL( MPI_Free_mem( this->m_buffer.data() ) );
+#endif
     }
 }
 
@@ -124,7 +135,7 @@ template <typename T>
 inline void Window<T>::accumulate( const T value, const MPI_Op op, const int rank, const size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
-    KVS_MPI_CALL( MPI_Accumulate( &value, 1, data_type, rank, offset, 1, data_type, op, this->m_handler ) );
+    KVS_MPI_CALL( MPI_Accumulate( (void*)&value, 1, data_type, rank, offset, 1, data_type, op, this->m_handler ) );
 }
 
 template <typename T>
@@ -132,7 +143,7 @@ inline void Window<T>::accumulate( const kvs::ValueArray<T>& values, const MPI_O
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
-    KVS_MPI_CALL( MPI_Accumulate( values.data(), data_size, data_type, rank, offset, data_size, data_type, op, this->m_handler ) );
+    KVS_MPI_CALL( MPI_Accumulate( (void*)values.data(), data_size, data_type, rank, offset, data_size, data_type, op, this->m_handler ) );
 }
 
 template <typename T>
@@ -150,7 +161,11 @@ inline void Window<T>::lock( const int lock_type, const int rank, const int asse
 template <typename T>
 inline void Window<T>::lockAll( const int assert )
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_lock_all( assert, this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_lock_all is not supported." );
+#endif
 }
 
 template <typename T>
@@ -162,37 +177,61 @@ inline void Window<T>::unlock( const int rank )
 template <typename T>
 inline void Window<T>::unlockAll()
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_unlock_all( this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_unlock_all is not supported." );
+#endif
 }
 
 template <typename T>
 inline void Window<T>::sync()
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_sync( this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_sync is not supported." );
+#endif
 }
 
 template <typename T>
 inline void Window<T>::flush( const int rank )
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_flush( rank, this->m_handler ) );
+#else
+    KVS_MPI_CALL( MPI_Win_unlock( rank, this->m_handler ) );
+#endif
 }
 
 template <typename T>
 inline void Window<T>::flushAll()
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_flush_all( this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_flush_all is not supported." );
+#endif
 }
 
 template <typename T>
 inline void Window<T>::flushLocal( const int rank )
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_flush_local( rank, this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_flush_local is not supported." );
+#endif
 }
 
 template <typename T>
 inline void Window<T>::flushLocalAll()
 {
+#if MPI_VERSION >= 3
     KVS_MPI_CALL( MPI_Win_flush_local_all( this->m_handler ) );
+#else
+    kvsMessageWarning( "MPI_Win_flush_local_all is not supported." );
+#endif
 }
 
 } // end of namespace mpi
