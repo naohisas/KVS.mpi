@@ -2,7 +2,7 @@
 KVS.mpi is a class library with message passing interface (MPI) for KVS.
 
 ```diff
-- Moved to KVS as SupportMPI 2020.7.10
+- Moved to KVS as SupportMPI (2020.7.10)
 ```
 
 ## Prerequisite
